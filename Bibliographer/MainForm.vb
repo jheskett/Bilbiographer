@@ -141,10 +141,15 @@ Public Class MainForm
 
         ' if there's any PersonID tied to this DocID, fill the textboxes with the first author's name
         If displayedPersonIDs.Count > 0 Then
-            AuthorFirstNameTextBox.Text = ""
-            AuthorMITextBox.Text = ""
-            AuthorLastNameTextBox.Text = ""
-            MoreAuthorsButton.Text = "Add More Authors"
+            Dim person As Person = AuthorNames.GetPersonByPersonID(displayedPersonIDs(0))
+            AuthorFirstNameTextBox.Text = person.firstName
+            AuthorMITextBox.Text = person.middleInit
+            AuthorLastNameTextBox.Text = person.lastName
+            If displayedPersonIDs.Count > 1 Then ' if there's multiple authors, indicate so by making button say "+2 More Authors"
+                MoreAuthorsButton.Text = "+" & displayedPersonIDs.Count - 1 & " More Authors"
+            Else
+                MoreAuthorsButton.Text = "Add More Authors"
+            End If
         Else ' if no PersonID associated with this DocID then wipe all author textboxes
             AuthorFirstNameTextBox.Text = ""
             AuthorMITextBox.Text = ""
