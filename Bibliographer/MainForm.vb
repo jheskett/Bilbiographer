@@ -1,4 +1,12 @@
-﻿Imports System.Data.OleDb
+﻿' Bibliographer.vb
+' CIS410 Fall 2018 Final Project
+' Members: Jeff Heskett, Phillip Foss, Ian Shaw
+' Purpose: This project will allow a user to store and retrieve bibliographic references for documents by author or year
+'
+' This is the main form that primarily has an SearchPanel and its controls to look up existing document refrences,
+' and UpdatePanel to add, update and delete document references.
+
+Imports System.Data.OleDb
 Imports System.Data.SqlClient
 
 Public Class MainForm
@@ -21,6 +29,7 @@ Public Class MainForm
         Finally
             dbConnection.Close()
         End Try
+        AuthorNames.ShareDBConnection(dbConnection) ' share dbConnection with AuthorNames (ideally this db connection should be its own static module)
     End Sub
 
     ' Update button in the topright of the SearchPanel switches to the UpdatePanel
@@ -29,8 +38,6 @@ Public Class MainForm
         UpdatePanel.Visible = True
 
         ' When Update button is hit and switching to UpdatePanel, update displayed record
-        UpdateAllDocIDs()
-        UpdateDisplayedPersonIDs()
         UpdateDisplayedRecord()
     End Sub
 
@@ -89,6 +96,9 @@ Public Class MainForm
     ' This updates the controls on the UpdatePanel to refect the currently-viewed record
     Private Sub UpdateDisplayedRecord()
 
+        ' before doing anything, make sure we have the most up-to-date DocIDs
+        UpdateAllDocIDs()
+
         ' if index into allDocIDs is out of bounds, wrap around to the other end of the list
         If docIDIndex < 0 Then
             docIDIndex = allDocIDs.Count - 1
@@ -125,6 +135,22 @@ Public Class MainForm
         Finally
             dbConnection.Close()
         End Try
+
+        ' before displaying authors for this document, populate displayedPersonIDs with all PersonIDs associated with this DocID
+        UpdateDisplayedPersonIDs()
+
+        ' if there's any PersonID tied to this DocID, fill the textboxes with the first author's name
+        If displayedPersonIDs.Count > 0 Then
+            AuthorFirstNameTextBox.Text = ""
+            AuthorMITextBox.Text = ""
+            AuthorLastNameTextBox.Text = ""
+            MoreAuthorsButton.Text = "Add More Authors"
+        Else ' if no PersonID associated with this DocID then wipe all author textboxes
+            AuthorFirstNameTextBox.Text = ""
+            AuthorMITextBox.Text = ""
+            AuthorLastNameTextBox.Text = ""
+            MoreAuthorsButton.Text = "Add More Authors"
+        End If
 
     End Sub
 
