@@ -754,6 +754,7 @@ Partial Class MainForm
         Me.Controls.Add(Me.UpdatePanel)
         Me.Controls.Add(Me.SearchPanel)
         Me.Name = "MainForm"
+        Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Bibliographer"
         Me.SearchPanel.ResumeLayout(False)
         Me.SearchPanel.PerformLayout()

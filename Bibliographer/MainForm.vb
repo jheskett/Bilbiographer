@@ -159,4 +159,168 @@ Public Class MainForm
 
     End Sub
 
+    ' click of First button on UpdatePanel to show first record
+    Private Sub FirstNavButton_Click(sender As Object, e As EventArgs) Handles FirstNavButton.Click
+        docIDIndex = 0
+        UpdateDisplayedRecord()
+    End Sub
+
+    ' click of Prev button on UpdatePanel to display previous record
+    Private Sub PrevNavButton_Click(sender As Object, e As EventArgs) Handles PrevNavButton.Click
+        docIDIndex -= 1
+        UpdateDisplayedRecord()
+    End Sub
+
+    ' click of Next button on UpdatePanel to display next record
+    Private Sub NextNavButton_Click(sender As Object, e As EventArgs) Handles NextNavButton.Click
+        docIDIndex += 1
+        UpdateDisplayedRecord()
+    End Sub
+
+    ' click of Last button on UpdatePanel to display last record
+    Private Sub LastNavButton_Click(sender As Object, e As EventArgs) Handles LastNavButton.Click
+        docIDIndex = allDocIDs.Count - 1
+        UpdateDisplayedRecord()
+    End Sub
+
+    ' click of New button will empty the form to wait for a new document to be entered
+    Private Sub NewButton_Click(sender As Object, e As EventArgs) Handles NewButton.Click
+        ' index Of -1 means it's a new record (going next or prev will wrap around to a valid record)
+        docIDIndex = -1
+        ' reset all fields
+        DocTypeComboBox.SelectedIndex = 0 ' Select Default For DocType
+        DocTitleTextBox.Text = ""
+        SectionTitleTextBox.Text = ""
+        CityTextBox.Text = ""
+        StateTextBox.Text = ""
+        PublisherTextBox.Text = ""
+        DocYearTextBox.Text = ""
+        DocMonthTextBox.Text = ""
+        DocDayTextBox.Text = ""
+        StartPageTextBox.Text = ""
+        EndPageTextBox.Text = ""
+        URLTextBox.Text = ""
+        VolumeTextBox.Text = ""
+        IssueTextBox.Text = ""
+        ' update progress text to show it's beyond last record: "6/5"
+        ProgressLabel.Text = String.Format("{0} of {1}", allDocIDs.Count + 1, allDocIDs.Count)
+        ' move focus to first empty field (DocTitle)
+        DocTitleTextBox.Select()
+    End Sub
+
+    ' click of Save button on UpdatePanel will either insert the document into the database (if docIDIndex is -1)
+    ' or update an existing document (if docIDIndex>=0) with the filled in textbox contents
+    Private Sub SaveButton_Click(sender As Object, e As EventArgs) Handles SaveButton.Click
+
+        ' first update the Document table (remember no PersonID is in this table; doing soon after)
+        If docIDIndex = -1 Then ' new document, needs to be INSERT into Document table
+            InsertNewDocument()
+        Else ' updating existing document, needs to be UPDATEd in Document table
+            UpdateExistingDocument()
+        End If
+
+        ' next update the Person and Author table for the author(s)
+
+
+        ' finally update the displayed record to reflect what's in the database (should be no apparent change to user)
+        UpdateDisplayedRecord()
+
+    End Sub
+
+    ' for use when saving potentially empty number fields to a database: return text as an integer or a null
+    Private Function NumberOrNull(text As String) As Object
+        If IsNumeric(text) Then
+            Return CInt(text)
+        Else
+            Return DBNull.Value
+        End If
+    End Function
+
+
+    ' called by SaveButton click; creates a new record in the Document table from textbox contents
+    Private Sub InsertNewDocument()
+        Try
+            dbConnection.Open()
+            Dim cmd As OleDbCommand = New OleDbCommand("INSERT INTO Document(DocType, DocTitle, SectionTitle, City, State, Publisher, DocYear, DocMonth, DocDay, StartPage, EndPage, URL, VolumeNum, IssueNum) " +
+                            "VALUES (@DocType, @DocTitle, @SectionTitle, @City, @State, @Publisher, @DocYear, @DocMonth, @DocDay, @StartPage, @EndPage, @URL, @VolumeNum, @IssueNum)", dbConnection)
+            ' using parameters to prevent SQL injection from user input
+            With cmd.Parameters
+                .Add(New OleDbParameter("@DocType", DocTypeComboBox.SelectedItem))
+                .Add(New OleDbParameter("@DocTitle", DocTitleTextBox.Text))
+                .Add(New OleDbParameter("@SectionTitle", SectionTitleTextBox.Text))
+                .Add(New OleDbParameter("@City", CityTextBox.Text))
+                .Add(New OleDbParameter("@State", StateTextBox.Text))
+                .Add(New OleDbParameter("@Publisher", PublisherTextBox.Text))
+                .Add(New OleDbParameter("@DocYear", NumberOrNull(DocYearTextBox.Text)))
+                .Add(New OleDbParameter("@DocMonth", NumberOrNull(DocMonthTextBox.Text)))
+                .Add(New OleDbParameter("@DocDay", NumberOrNull(DocDayTextBox.Text)))
+                .Add(New OleDbParameter("@StartPage", NumberOrNull(StartPageTextBox.Text)))
+                .Add(New OleDbParameter("@EndPage", NumberOrNull(EndPageTextBox.Text)))
+                .Add(New OleDbParameter("@URL", URLTextBox.Text))
+                .Add(New OleDbParameter("@VolumeNum", NumberOrNull(VolumeTextBox.Text)))
+                .Add(New OleDbParameter("@IssueNum", NumberOrNull(IssueTextBox.Text)))
+            End With
+            ' execute the INSERT
+            cmd.ExecuteNonQuery()
+            ' since a new DocID was just created, and we can't be sure what it is, need to update them
+            dbConnection.Close()
+            UpdateAllDocIDs()
+            docIDIndex = allDocIDs.Count - 1 ' last record is new
+        Catch ex As Exception
+            MessageBox.Show("Error creating new record in Document table: " + ex.Message)
+        Finally
+            dbConnection.Close()
+        End Try
+    End Sub
+
+    ' called by SaveButton click; updates an existing record in the Document table from textbox contents
+    Private Sub UpdateExistingDocument()
+        Try
+            dbConnection.Open()
+            Dim cmd As OleDbCommand = New OleDbCommand("UPDATE Document " &
+                            "SET DocType=@DocType, DocTitle=@DocTitle, SectionTitle=@SectionTitle, City=@City, State=@State, Publisher=@Publiser, DocYear=@DocYear, DocMonth=@DocMonth, DocDay=@DocDay, StartPage=@StartPage, EndPage=@EndPage, URL=@URL, VolumeNum=@VolumeNum, IssueNum=@IssueNum " &
+                            "WHERE DocID=" + GetCurrentDocID(), dbConnection)
+            ' using parameters to prevent SQL injection from user input
+            With cmd.Parameters
+                .Add(New OleDbParameter("@DocType", DocTypeComboBox.SelectedItem))
+                .Add(New OleDbParameter("@DocTitle", DocTitleTextBox.Text))
+                .Add(New OleDbParameter("@SectionTitle", SectionTitleTextBox.Text))
+                .Add(New OleDbParameter("@City", CityTextBox.Text))
+                .Add(New OleDbParameter("@State", StateTextBox.Text))
+                .Add(New OleDbParameter("@Publisher", PublisherTextBox.Text))
+                .Add(New OleDbParameter("@DocYear", NumberOrNull(DocYearTextBox.Text)))
+                .Add(New OleDbParameter("@DocMonth", NumberOrNull(DocMonthTextBox.Text)))
+                .Add(New OleDbParameter("@DocDay", NumberOrNull(DocDayTextBox.Text)))
+                .Add(New OleDbParameter("@StartPage", NumberOrNull(StartPageTextBox.Text)))
+                .Add(New OleDbParameter("@EndPage", NumberOrNull(EndPageTextBox.Text)))
+                .Add(New OleDbParameter("@URL", URLTextBox.Text))
+                .Add(New OleDbParameter("@VolumeNum", NumberOrNull(VolumeTextBox.Text)))
+                .Add(New OleDbParameter("@IssueNum", NumberOrNull(IssueTextBox.Text)))
+            End With
+            ' execute the INSERT
+            cmd.ExecuteNonQuery()
+        Catch ex As Exception
+            MessageBox.Show("Error updating record in Document table: " + ex.Message)
+        Finally
+            dbConnection.Close()
+        End Try
+    End Sub
+
+    ' click of the Add More Authors button pops up a dialog to enter more authors
+    Private Sub MoreAuthorsButton_Click(sender As Object, e As EventArgs) Handles MoreAuthorsButton.Click
+
+        Dim popup As MoreAuthorsForm = New MoreAuthorsForm() ' create a form
+
+        popup.SetPersonIDs(displayedPersonIDs) ' update textboxes in form to show known names for this document
+
+        Dim result As DialogResult = popup.ShowDialog() ' show the form
+
+        If result = DialogResult.OK Then ' if they clicked OK then accept names entered in MoreAuthors popup
+            displayedPersonIDs = popup.GetPersonIDs()
+        End If
+
+        UpdateDisplayedRecord()
+
+    End Sub
+
 End Class
