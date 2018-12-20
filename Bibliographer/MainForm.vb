@@ -140,22 +140,7 @@ Public Class MainForm
         UpdateDisplayedPersonIDs()
 
         ' if there's any PersonID tied to this DocID, fill the textboxes with the first author's name
-        If displayedPersonIDs.Count > 0 Then
-            Dim person As Person = AuthorNames.GetPersonByPersonID(displayedPersonIDs(0))
-            AuthorFirstNameTextBox.Text = person.firstName
-            AuthorMITextBox.Text = person.middleInit
-            AuthorLastNameTextBox.Text = person.lastName
-            If displayedPersonIDs.Count > 1 Then ' if there's multiple authors, indicate so by making button say "+2 More Authors"
-                MoreAuthorsButton.Text = "+" & displayedPersonIDs.Count - 1 & " More Authors"
-            Else
-                MoreAuthorsButton.Text = "Add More Authors"
-            End If
-        Else ' if no PersonID associated with this DocID then wipe all author textboxes
-            AuthorFirstNameTextBox.Text = ""
-            AuthorMITextBox.Text = ""
-            AuthorLastNameTextBox.Text = ""
-            MoreAuthorsButton.Text = "Add More Authors"
-        End If
+        UpdateFrontAuthor()
 
     End Sub
 
@@ -204,8 +189,11 @@ Public Class MainForm
         IssueTextBox.Text = ""
         ' update progress text to show it's beyond last record: "6/5"
         ProgressLabel.Text = String.Format("{0} of {1}", allDocIDs.Count + 1, allDocIDs.Count)
-        ' move focus to first empty field (DocTitle)
-        DocTitleTextBox.Select()
+        ' empty author stuff
+        displayedPersonIDs.Clear()
+        UpdateFrontAuthor()
+        ' move focus to first empty field (AuthorFirstName)
+        AuthorFirstNameTextBox.Select()
     End Sub
 
     ' click of Save button on UpdatePanel will either insert the document into the database (if docIDIndex is -1)
@@ -219,8 +207,19 @@ Public Class MainForm
             UpdateExistingDocument()
         End If
 
-        ' next update the Person and Author table for the author(s)
+        ' if the name in the UpdatePanel's author textboxes are not in displayedPersonIDs, then add it to the list of personIDs
+        ' this can potentially add new names to PersonIDs; which is okay they'll be cleaned up after Save and they won't be associated until saved
+        Dim frontPersonID = AuthorNames.GetPersonIDByName(AuthorFirstNameTextBox.Text, AuthorMITextBox.Text, AuthorLastNameTextBox.Text)
+        If frontPersonID <> "" And Not displayedPersonIDs.Contains(frontPersonID) Then
+            If displayedPersonIDs.Count = 0 Then ' if there is no authors in displayedPersonIDs list
+                displayedPersonIDs.Add(frontPersonID) ' then add them
+            Else
+                displayedPersonIDs(0) = frontPersonID ' otherwise replacing first name that was in that box
+            End If
+        End If
 
+        ' next update Author table for the author(s) (the Person table already added all new authors when getting PersonIDs for them)
+        UpdateAuthorTable()
 
         ' finally update the displayed record to reflect what's in the database (should be no apparent change to user)
         UpdateDisplayedRecord()
@@ -311,15 +310,88 @@ Public Class MainForm
 
         Dim popup As MoreAuthorsForm = New MoreAuthorsForm() ' create a form
 
-        popup.SetPersonIDs(displayedPersonIDs) ' update textboxes in form to show known names for this document
+        ' if the name in the UpdatePanel's author textboxes are not in displayedPersonIDs, then add it to the list
+        ' this can potentially add new names to PersonIDs; which is okay they'll be cleaned up after Save and they won't be associated until saved
+        Dim frontPersonID = AuthorNames.GetPersonIDByName(AuthorFirstNameTextBox.Text, AuthorMITextBox.Text, AuthorLastNameTextBox.Text)
+        If frontPersonID <> "" And Not displayedPersonIDs.Contains(frontPersonID) Then
+            If displayedPersonIDs.Count = 0 Then ' if there is no authors in displayedPersonIDs list
+                displayedPersonIDs.Add(frontPersonID) ' then add them
+            Else
+                displayedPersonIDs(0) = frontPersonID ' otherwise replacing first name that was in that box
+            End If
+        End If
+
+        ' update textboxes in the popup form to show known names associated for this document
+        popup.SetPersonIDs(displayedPersonIDs)
 
         Dim result As DialogResult = popup.ShowDialog() ' show the form
 
         If result = DialogResult.OK Then ' if they clicked OK then accept names entered in MoreAuthors popup
+            ' update list of PersonIDs associated with this document from the MoreAuthors popup
             displayedPersonIDs = popup.GetPersonIDs()
+            ' and update the UpdatePanel's display of the first author (if any)
+            UpdateFrontAuthor()
         End If
 
-        UpdateDisplayedRecord()
+    End Sub
+
+    ' this updates the "front author"s first, middle and last name in UpdatePanel to the first displayedPersonID, if any
+    Private Sub UpdateFrontAuthor()
+        If displayedPersonIDs.Count > 0 Then ' if there's at least one author
+            Dim person = AuthorNames.GetPersonByPersonID(displayedPersonIDs(0))
+            AuthorFirstNameTextBox.Text = person.firstName
+            AuthorMITextBox.Text = person.middleInit
+            AuthorLastNameTextBox.Text = person.lastName
+            If displayedPersonIDs.Count > 1 Then ' if there's more than 2 then change button to "+x More Authors"
+                MoreAuthorsButton.Text = "+" & displayedPersonIDs.Count - 1 & " More Authors"
+            Else
+                MoreAuthorsButton.Text = "Add More Authors"
+            End If
+        Else ' there are no authors in displayedPersonIDs
+            AuthorFirstNameTextBox.Text = ""
+            AuthorMITextBox.Text = ""
+            AuthorLastNameTextBox.Text = ""
+            MoreAuthorsButton.Text = "Add More Authors"
+        End If
+    End Sub
+
+    ' this is called during a save and will update the Author junction table with the displayed PersonIDs with the current DocID.
+    ' each row in this table is two fields: PersonID and DocID
+    Private Sub UpdateAuthorTable()
+
+
+        ' step 1: delete all rows that have this DocID
+        Try
+            dbConnection.Open()
+            Dim cmd As OleDbCommand = New OleDbCommand("DELETE FROM Author WHERE DocID=" & GetCurrentDocID(), dbConnection)
+            cmd.ExecuteNonQuery()
+        Catch ex As Exception
+            MessageBox.Show("Error updating Authors step 1: " & ex.Message)
+            dbConnection.Close()
+            Return ' if there were problems, don't stick around to try the rest of the update
+        End Try
+
+        ' if there are no authors, then don't try to insert any, close db and leave
+        If displayedPersonIDs.Count = 0 Then
+            MessageBox.Show("No Authors?")
+            dbConnection.Close()
+            Return
+        End If
+
+        ' step 2: add all rows that aren't in there yet (INSERT IGNORE will skip pairs already in the table because it would violate primary key to add it again)
+        Dim statement = "INSERT INTO Author VALUES "
+        Try
+            ' the following builds a statement like "INSERT IGNORE INTO Author VALUES (1,2), (3,4), (3, 2)" where each ordered pair is a PersonID,DocID
+            For Each personID As String In displayedPersonIDs
+                Dim cmd As OleDbCommand = New OleDbCommand("INSERT INTO AUTHOR VALUES (" & personID & ", " & GetCurrentDocID() & ");", dbConnection)
+                cmd.ExecuteNonQuery()
+            Next
+            dbConnection.Close()
+        Catch ex As Exception
+            MessageBox.Show("Error updating Authors step 2: " & ex.Message & " - " & statement)
+        Finally
+            dbConnection.Close()
+        End Try
 
     End Sub
 

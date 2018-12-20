@@ -66,8 +66,7 @@ Module AuthorNames
         ' if we reached here, a match wasn't found. create a PersonID by inserting the new name into the database
         Try
             dbConnection.Open()
-            Dim cmd As OleDbCommand = New OleDbCommand("SELECT * FROM Person", dbConnection)
-            cmd.CommandText = "INSERT INTO Person(FirstName, MiddleInit, LastName) VALUES (@FirstName, @MiddleInit, @LastName)"
+            Dim cmd As OleDbCommand = New OleDbCommand("INSERT INTO Person(FirstName, MiddleInit, LastName) VALUES (@FirstName, @MiddleInit, @LastName)", dbConnection)
             ' using parameters to prevent SQL injection from user input
             With cmd.Parameters
                 .Add(New OleDbParameter("@FirstName", firstName))
