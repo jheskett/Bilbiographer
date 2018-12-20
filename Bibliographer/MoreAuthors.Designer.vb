@@ -271,7 +271,7 @@ Partial Class MoreAuthorsForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(370, 298)
+        Me.ClientSize = New System.Drawing.Size(363, 292)
         Me.Controls.Add(Me.OkButton)
         Me.Controls.Add(Me.LastName7TextBox)
         Me.Controls.Add(Me.MiddleInit7TextBox)

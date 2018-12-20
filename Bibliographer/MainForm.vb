@@ -200,6 +200,12 @@ Public Class MainForm
     ' or update an existing document (if docIDIndex>=0) with the filled in textbox contents
     Private Sub SaveButton_Click(sender As Object, e As EventArgs) Handles SaveButton.Click
 
+        ' don't allow a document to save if an author, title or year have not been entered
+        If AuthorFirstNameTextBox.Text.Trim() = "" Or DocTitleTextBox.Text.Trim() = "" Or DocYearTextBox.Text.Trim() = "" Then
+            MessageBox.Show("All documents must have an author, title and year.")
+            Return
+        End If
+
         ' first update the Document table (remember no PersonID is in this table; doing soon after)
         If docIDIndex = -1 Then ' new document, needs to be INSERT into Document table
             InsertNewDocument()
@@ -223,7 +229,6 @@ Public Class MainForm
 
         ' finally update the displayed record to reflect what's in the database (should be no apparent change to user)
         UpdateDisplayedRecord()
-
     End Sub
 
     ' for use when saving potentially empty number fields to a database: return text as an integer or a null
@@ -355,44 +360,63 @@ Public Class MainForm
         End If
     End Sub
 
-    ' this is called during a save and will update the Author junction table with the displayed PersonIDs with the current DocID.
-    ' each row in this table is two fields: PersonID and DocID
+    ' this is called during a save and will update the Author junction table with the displayed PersonIDs with the current DocID
+    ' in three steps: 1) delete every record with the currently viewed DocID, 2) add all PersonID+DocID pairs for this DocID, and
+    ' 3) delete any orphaned PersonIDs from Person that are no longer associated with a DocID in Author table
     Private Sub UpdateAuthorTable()
-
-
-        ' step 1: delete all rows that have this DocID
+        ' step 1: delete all rows in Author table that have the current DocID
         Try
             dbConnection.Open()
             Dim cmd As OleDbCommand = New OleDbCommand("DELETE FROM Author WHERE DocID=" & GetCurrentDocID(), dbConnection)
             cmd.ExecuteNonQuery()
         Catch ex As Exception
-            MessageBox.Show("Error updating Authors step 1: " & ex.Message)
+            MessageBox.Show("Error updating Authors step 1: " & ex.Message) ' "step 1" intentionally ambiguous: don't want to tell user there was a problem deleting stuff when they're trying to save
             dbConnection.Close()
             Return ' if there were problems, don't stick around to try the rest of the update
         End Try
 
-        ' if there are no authors, then don't try to insert any, close db and leave
-        If displayedPersonIDs.Count = 0 Then
-            MessageBox.Show("No Authors?")
-            dbConnection.Close()
-            Return
-        End If
-
-        ' step 2: add all rows that aren't in there yet (INSERT IGNORE will skip pairs already in the table because it would violate primary key to add it again)
-        Dim statement = "INSERT INTO Author VALUES "
+        ' step 2: add to Author all PersonID+DocID pairs for the current DocID
         Try
             ' the following builds a statement like "INSERT IGNORE INTO Author VALUES (1,2), (3,4), (3, 2)" where each ordered pair is a PersonID,DocID
             For Each personID As String In displayedPersonIDs
                 Dim cmd As OleDbCommand = New OleDbCommand("INSERT INTO AUTHOR VALUES (" & personID & ", " & GetCurrentDocID() & ");", dbConnection)
                 cmd.ExecuteNonQuery()
             Next
-            dbConnection.Close()
         Catch ex As Exception
-            MessageBox.Show("Error updating Authors step 2: " & ex.Message & " - " & statement)
+            MessageBox.Show("Error updating Authors step 2: " & ex.Message)
+            dbConnection.Close()
+            Return ' again, if any problems, don't stick around; leave immediately
+        End Try
+
+        ' step 3: remove any PersonIDs from Person table that are no longer in Author table (meaning no longer associated with a document)
+        Try
+            Dim cmd As OleDbCommand = New OleDbCommand("DELETE * FROM PERSON WHERE Person.PersonID IN (SELECT Person.PersonID FROM Person LEFT JOIN Author ON Person.PersonID = Author.PersonID WHERE Author.DocID IS NULL);", dbConnection)
+            cmd.ExecuteNonQuery()
+        Catch ex As Exception
+            MessageBox.Show("Error updating Authors step 3: " & ex.Message)
+            ' this was last step so can close db in finally instead of catch
         Finally
             dbConnection.Close()
         End Try
-
     End Sub
 
+    ' Name, title and year are required fields. when the text in those fields change, enable the Save button only if all three fields have a value
+    Private Sub RequiredFields_TextChanged(sender As Object, e As EventArgs) Handles DocYearTextBox.TextChanged, DocTitleTextBox.TextChanged, AuthorFirstNameTextBox.TextChanged
+        SaveButton.Enabled = Not (AuthorFirstNameTextBox.Text.Trim() = "" Or DocTitleTextBox.Text.Trim() = "" Or DocYearTextBox.Text.Trim() = "")
+    End Sub
+
+    ' When a doc type is chosen (combo box changes), update controls to be more specific to that type
+    Private Sub DocTypeComboBox_SelectedValueChanged(sender As Object, e As EventArgs) Handles DocTypeComboBox.SelectedValueChanged
+        Select Case DocTypeComboBox.SelectedItem.ToString()
+            Case "Book"
+                DocTitleLabel.Text = "Book Title"
+                SectionTitleLabel.Text = "Book Section"
+            Case "Journal"
+                DocTitleLabel.Text = "Journal Title"
+                SectionTitleLabel.Text = "Article Title"
+            Case Else
+                DocTitleLabel.Text = "Conference Name"
+                SectionTitleLabel.Text = "Paper Title"
+        End Select
+    End Sub
 End Class
