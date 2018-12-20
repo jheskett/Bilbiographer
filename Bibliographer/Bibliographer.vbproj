@@ -74,6 +74,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthorNames.vb" />
+    <Compile Include="MainForm.SearchPanel.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.UpdatePanel.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="MainForm.vb">
       <SubType>Form</SubType>
     </Compile>

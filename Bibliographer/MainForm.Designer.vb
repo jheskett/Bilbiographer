@@ -79,7 +79,7 @@ Partial Class MainForm
         Me.SortYearRadioButton = New System.Windows.Forms.RadioButton()
         Me.SortAuthorRadioButton = New System.Windows.Forms.RadioButton()
         Me.SearchTextBox = New System.Windows.Forms.TextBox()
-        Me.richTextBox1 = New System.Windows.Forms.RichTextBox()
+        Me.ResultsRichTextBox = New System.Windows.Forms.RichTextBox()
         Me.UpdateButton = New System.Windows.Forms.Button()
         Me.SearchButton = New System.Windows.Forms.Button()
         Me.UpdatePanel = New System.Windows.Forms.Panel()
@@ -541,7 +541,7 @@ Partial Class MainForm
         Me.SearchPanel.Controls.Add(Me.SearchLabel)
         Me.SearchPanel.Controls.Add(Me.SortGroupBox)
         Me.SearchPanel.Controls.Add(Me.SearchTextBox)
-        Me.SearchPanel.Controls.Add(Me.richTextBox1)
+        Me.SearchPanel.Controls.Add(Me.ResultsRichTextBox)
         Me.SearchPanel.Controls.Add(Me.UpdateButton)
         Me.SearchPanel.Controls.Add(Me.SearchButton)
         Me.SearchPanel.Dock = System.Windows.Forms.DockStyle.Fill
@@ -663,14 +663,14 @@ Partial Class MainForm
         Me.SearchTextBox.Size = New System.Drawing.Size(262, 22)
         Me.SearchTextBox.TabIndex = 1
         '
-        'richTextBox1
+        'ResultsRichTextBox
         '
-        Me.richTextBox1.Font = New System.Drawing.Font("Times New Roman", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.richTextBox1.Location = New System.Drawing.Point(15, 162)
-        Me.richTextBox1.Name = "richTextBox1"
-        Me.richTextBox1.Size = New System.Drawing.Size(492, 276)
-        Me.richTextBox1.TabIndex = 5
-        Me.richTextBox1.Text = ""
+        Me.ResultsRichTextBox.Font = New System.Drawing.Font("Times New Roman", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.ResultsRichTextBox.Location = New System.Drawing.Point(15, 162)
+        Me.ResultsRichTextBox.Name = "ResultsRichTextBox"
+        Me.ResultsRichTextBox.Size = New System.Drawing.Size(492, 276)
+        Me.ResultsRichTextBox.TabIndex = 5
+        Me.ResultsRichTextBox.Text = ""
         '
         'UpdateButton
         '
@@ -751,8 +751,8 @@ Partial Class MainForm
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(528, 450)
-        Me.Controls.Add(Me.UpdatePanel)
         Me.Controls.Add(Me.SearchPanel)
+        Me.Controls.Add(Me.UpdatePanel)
         Me.Name = "MainForm"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Bibliographer"
@@ -824,7 +824,7 @@ Partial Class MainForm
     Private WithEvents SortYearRadioButton As RadioButton
     Private WithEvents SortAuthorRadioButton As RadioButton
     Private WithEvents SearchTextBox As TextBox
-    Private WithEvents richTextBox1 As RichTextBox
+    Private WithEvents ResultsRichTextBox As RichTextBox
     Private WithEvents UpdateButton As Button
     Private WithEvents SearchButton As Button
     Private WithEvents UpdatePanel As Panel
