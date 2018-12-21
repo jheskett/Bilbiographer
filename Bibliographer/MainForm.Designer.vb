@@ -83,6 +83,7 @@ Partial Class MainForm
         Me.UpdateButton = New System.Windows.Forms.Button()
         Me.SearchButton = New System.Windows.Forms.Button()
         Me.UpdatePanel = New System.Windows.Forms.Panel()
+        Me.SearchResetButton = New System.Windows.Forms.Button()
         Me.SearchPanel.SuspendLayout()
         Me.CitationFormatGroupBox.SuspendLayout()
         Me.SortGroupBox.SuspendLayout()
@@ -536,6 +537,7 @@ Partial Class MainForm
         '
         'SearchPanel
         '
+        Me.SearchPanel.Controls.Add(Me.SearchResetButton)
         Me.SearchPanel.Controls.Add(Me.PurposeLabel)
         Me.SearchPanel.Controls.Add(Me.CitationFormatGroupBox)
         Me.SearchPanel.Controls.Add(Me.SearchLabel)
@@ -660,7 +662,7 @@ Partial Class MainForm
         Me.SearchTextBox.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.SearchTextBox.Location = New System.Drawing.Point(72, 61)
         Me.SearchTextBox.Name = "SearchTextBox"
-        Me.SearchTextBox.Size = New System.Drawing.Size(262, 22)
+        Me.SearchTextBox.Size = New System.Drawing.Size(228, 22)
         Me.SearchTextBox.TabIndex = 1
         '
         'ResultsRichTextBox
@@ -675,7 +677,7 @@ Partial Class MainForm
         'UpdateButton
         '
         Me.UpdateButton.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.UpdateButton.Location = New System.Drawing.Point(393, 60)
+        Me.UpdateButton.Location = New System.Drawing.Point(393, 61)
         Me.UpdateButton.Name = "UpdateButton"
         Me.UpdateButton.Size = New System.Drawing.Size(114, 23)
         Me.UpdateButton.TabIndex = 2
@@ -686,7 +688,7 @@ Partial Class MainForm
         '
         Me.SearchButton.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.SearchButton.Image = CType(resources.GetObject("SearchButton.Image"), System.Drawing.Image)
-        Me.SearchButton.Location = New System.Drawing.Point(340, 61)
+        Me.SearchButton.Location = New System.Drawing.Point(306, 61)
         Me.SearchButton.Name = "SearchButton"
         Me.SearchButton.Size = New System.Drawing.Size(36, 22)
         Me.SearchButton.TabIndex = 3
@@ -745,6 +747,16 @@ Partial Class MainForm
         Me.UpdatePanel.Size = New System.Drawing.Size(528, 450)
         Me.UpdatePanel.TabIndex = 12
         Me.UpdatePanel.Visible = False
+        '
+        'SearchResetButton
+        '
+        Me.SearchResetButton.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.SearchResetButton.Image = CType(resources.GetObject("SearchResetButton.Image"), System.Drawing.Image)
+        Me.SearchResetButton.Location = New System.Drawing.Point(348, 61)
+        Me.SearchResetButton.Name = "SearchResetButton"
+        Me.SearchResetButton.Size = New System.Drawing.Size(36, 22)
+        Me.SearchResetButton.TabIndex = 9
+        Me.SearchResetButton.UseVisualStyleBackColor = True
         '
         'MainForm
         '
@@ -828,4 +840,5 @@ Partial Class MainForm
     Private WithEvents UpdateButton As Button
     Private WithEvents SearchButton As Button
     Private WithEvents UpdatePanel As Panel
+    Private WithEvents SearchResetButton As Button
 End Class

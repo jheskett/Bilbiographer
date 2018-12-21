@@ -8,14 +8,6 @@
 
 Imports System.Data.OleDb
 
-' structure to store a record from the Person table
-Structure Person
-    Dim personID As String
-    Dim firstName As String
-    Dim middleInit As String
-    Dim lastName As String
-End Structure
-
 Module AuthorNames
 
     ' private list of Person structs will be a copy of the People table

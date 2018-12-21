@@ -121,6 +121,16 @@
     <value>Find the record you want to change and click Save after any changes. To add a new reference, click New, enter all relevant information, and then click Save to commit the new reference. Click Done to return to the previous screen.</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="SearchResetButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        wwAADsMBx2+oZAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMS41ZEdYUgAAAN1JREFUOE+V0TEL
+        QVEYxvEzEBYpg6IUq2Qx+SJKvp9BWZiUjclCkQwGJoNiMOP/uPcV4jqe+tXJOc/r3ntcmCZywdIrWbSC
+        pXNtXDCHNn5FZ2ZQR937P69whTaihlhZZxd4PHUea2hjigze87VsKWADG5KG5WfZUoQNmUBDvMuWErZQ
+        YYy/ypYydlDx77Kix9a12oARUvDK8zsvsQ/XQyQRmU8frAIbMkACHxP1tas4QHt9xPESn6uqwYb08Bji
+        U7bUcYTOdhGD64Q/+F6Vhpxwhl7tXtI0n7KlEXDuBk6wSsvSGYCjAAAAAElFTkSuQmCC
+</value>
+  </data>
   <data name="SearchButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
