@@ -43,7 +43,14 @@ Partial Public Class MainForm
 
     ' adds the given document to the richtextbox where search results are listed (here is where it can be formatted)
     Private Sub AddDocumentToResults(document As Document)
-        ResultsRichTextBox.Text &= GetAPAFormat(document) & vbCrLf & vbCrLf
+        If APARadioButton.Checked Then ' APA
+            ResultsRichTextBox.Text &= GetAPAFormat(document) & vbCrLf & vbCrLf
+        ElseIf MLARadioButton.Checked Then ' MLA
+            ResultsRichTextBox.Text &= GetMLAFormat(document) & vbCrLf & vbCrLf
+        Else ' IEEE format
+            ResultsRichTextBox.Text &= GetIEEEFormat(document) & vbCrLf & vbCrLf
+        End If
+
     End Sub
 
     ' this returns the Document in the allDocuments list from its docID, if it exists; if not it returns null
@@ -125,8 +132,9 @@ Partial Public Class MainForm
         End If
     End Sub
 
+
     ' if the sort radio buttons (Author or Year) are checked, the sort order changes
-    Private Sub SortRadioButton_CheckedChanged(sender As Object, e As EventArgs) Handles SortYearRadioButton.CheckedChanged, SortAuthorRadioButton.Click
+    Private Sub RadioButton_Click(sender As Object, e As EventArgs) Handles SortYearRadioButton.Click, SortAuthorRadioButton.Click, APARadioButton.Click, MLARadioButton.Click, IEEERadioButton.Click
         SearchButton.PerformClick()
     End Sub
 
@@ -200,23 +208,21 @@ Partial Public Class MainForm
                     output &= document.city & ", "
                 End If
                 If document.publisher <> "" And document.state <> "" Then
-                    output &= document.state & ": " & document.publisher & "."
+                    output &= document.state & ": " & document.publisher & ". "
                 ElseIf document.state <> "" Then
-                    output &= document.state & "."
+                    output &= document.state & ". "
+                End If
+                If document.url <> "" Then
+                    If document.url.Substring(0, 3).ToUpper() = "DOI" Then
+                        output &= document.url
+                    Else
+                        output &= "Retrieved from " & document.url
+                    End If
                 End If
 
         End Select
 
         Return output
-    End Function
-
-    ' this returns the text inserted into the pattern (replacing "{0}") or "" if the text is empty
-    Private Function FormatExistence(pattern As String, text As String) As String
-        If text = "" Then
-            Return ""
-        Else
-            Return pattern.Replace("{0}", text)
-        End If
     End Function
 
     ' returns a list of authors in APA format (LastName, F.M.)
@@ -243,5 +249,120 @@ Partial Public Class MainForm
         Return output
     End Function
 
+    Private Function GetMLAFormat(document As Document) As String
+        Dim output As String = GetMLAAuthorsList(document.authors) & ". "
+        output = output.Replace("..", ".") ' any middleinits may leave extra . so remove them if so
+
+        If document.sectionTitle <> "" Then
+            output &= """" & document.sectionTitle & "."" "
+        End If
+        output &= document.docTitle
+
+        Select Case document.docType
+            Case "Book"
+                output &= ". "
+                If document.publisher <> "" Then
+                    output &= document.publisher & ", "
+                End If
+                If document.startPage <> "" Then
+                    output &= document.docYear & ", "
+                    If document.startPage <> "" And document.endPage <> "" Then ' pages
+                        output &= "pp. " & document.startPage & "-" & document.endPage & ". "
+                    Else
+                        output &= "p. " & document.startPage & ". "
+                    End If
+                Else
+                    output &= document.docYear & "."
+                End If
+            Case "Journal"
+                If document.volumeNum <> "" Then
+                    output &= "vol. " & document.volumeNum
+                    If document.issueNum <> "" Then
+                        output &= ", no. " & document.issueNum & ", "
+                    End If
+                    output &= ". "
+                End If
+                If document.startPage <> "" And document.endPage <> "" Then ' pages
+                    output &= "pp. " & document.startPage & "-" & document.endPage & ". "
+                ElseIf document.startPage <> "" Then
+                    output &= "p. " & document.startPage & ". "
+                End If
+                If document.url <> "" Then
+                    output &= document.url & "."
+                End If
+            Case Else ' Conference
+                output &= ", "
+                If document.docMonth <> "" Then
+                    output &= DateAndTime.MonthName(CInt(document.docMonth), True) & " "
+                    If document.docDay <> "" Then
+                        output &= document.docDay & " "
+                    End If
+                End If
+                output &= document.docYear & ", "
+                If document.publisher <> "" Then
+                    output &= document.publisher & ". "
+                End If
+                If document.url <> "" Then
+                    output &= document.url & "."
+                End If
+        End Select
+
+
+        Return output
+    End Function
+
+    ' MLA lists like LastName, FirstName M. (up to two names, more than that get an et al after first author)
+    Private Function GetMLAAuthorsList(authors As List(Of Person)) As String
+        If authors.Count = 1 Then
+            Return GetSingleAuthorName(authors(0))
+        ElseIf authors.Count = 2 Then
+            Return GetSingleAuthorName(authors(0)) & ", and " & GetSingleAuthorName(authors(1))
+        ElseIf authors.Count > 2 Then
+            Return GetSingleAuthorName(authors(0)) & ", et al."
+        Else
+            Return ""
+        End If
+    End Function
+
+    ' take a single Person and returns a name formatted as LastName, FirstName M.
+    Private Function GetSingleAuthorName(author As Person) As String
+        If author.lastName = "" Then
+            Return author.firstName
+        ElseIf author.middleInit <> "" Then
+            Return author.lastName & ", " & author.firstName & " " & author.middleInit & "."
+        Else
+            Return author.lastName & ", " & author.firstName
+        End If
+    End Function
+
+    Private Function GetIEEEFormat(document As Document) As String
+        Dim output As String = ""
+
+        output &= GetIEEEAuthorsList(document.authors)
+
+        Return output
+    End Function
+
+    ' returns a string of author names in IEEE format (F. M. LastName)
+    Private Function GetIEEEAuthorsList(authors As List(Of Person)) As String
+        Dim output As String = ""
+        For Each author As Person In authors
+            If author.lastName <> "" Then
+                output &= author.firstName.Substring(0, 1) & ". "
+                If author.middleInit <> "" Then
+                    output &= author.middleInit & ". "
+                End If
+                output &= author.lastName
+            Else
+                output &= author.firstName
+            End If
+            output &= ", "
+        Next
+        ' trim trailing ", " if there's any names added
+        If output.Length > 1 Then
+            output = output.Remove(output.Length - 2)
+        End If
+        Return output
+    End Function
 
 End Class
