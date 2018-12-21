@@ -16,6 +16,7 @@ Partial Public Class MainForm
     Private Sub DoneButton_Click(sender As Object, e As EventArgs) Handles DoneButton.Click
         UpdatePanel.Visible = False
         SearchPanel.Visible = True
+        SearchButton.PerformClick() ' in case any changes, do a search with most recent documents
     End Sub
 
     ' returns the currently viewed DocID or "" if it's a new one (we won't get a DocID for a new document until it's commited to the database)

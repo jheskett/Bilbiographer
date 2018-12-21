@@ -338,7 +338,37 @@ Partial Public Class MainForm
     Private Function GetIEEEFormat(document As Document) As String
         Dim output As String = ""
 
-        output &= GetIEEEAuthorsList(document.authors)
+        output &= GetIEEEAuthorsList(document.authors) & ", "
+
+        If document.sectionTitle <> "" Then
+            output &= """" & document.sectionTitle & "."" "
+        End If
+        output &= document.docTitle & ", "
+        If document.city <> "" And document.state <> "" And document.publisher <> "" Then
+            output &= document.city & ", " & document.state & ": " & document.publisher & ", "
+        ElseIf document.city <> "" And document.publisher <> "" Then
+            output &= document.city & ": " & document.publisher & ", "
+        Else
+            If document.publisher <> "" Then
+                output &= document.publisher & ", "
+            End If
+        End If
+        If document.volumeNum <> "" Then
+            output &= "vol. " & document.volumeNum
+            If document.issueNum <> "" Then
+                output &= ", no. " & document.issueNum & ", "
+            End If
+            output &= ", "
+        End If
+        If document.startPage <> "" And document.endPage <> "" Then ' pages
+            output &= "pp. " & document.startPage & "-" & document.endPage & ". "
+        ElseIf document.startPage <> "" Then
+            output &= "p. " & document.startPage & ". "
+        End If
+        If document.url <> "" Then
+            output &= document.url & ". "
+        End If
+        output &= document.docYear
 
         Return output
     End Function
