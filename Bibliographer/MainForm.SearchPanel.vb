@@ -43,7 +43,7 @@ Partial Public Class MainForm
 
     ' adds the given document to the richtextbox where search results are listed (here is where it can be formatted)
     Private Sub AddDocumentToResults(document As Document)
-        ResultsRichTextBox.Text &= document.docTitle & vbCrLf & vbCrLf
+        ResultsRichTextBox.Text &= GetAPAFormat(document) & vbCrLf & vbCrLf
     End Sub
 
     ' this returns the Document in the allDocuments list from its docID, if it exists; if not it returns null
@@ -129,6 +129,119 @@ Partial Public Class MainForm
     Private Sub SortRadioButton_CheckedChanged(sender As Object, e As EventArgs) Handles SortYearRadioButton.CheckedChanged, SortAuthorRadioButton.Click
         SearchButton.PerformClick()
     End Sub
+
+    ' returns the given document as an APA-formatted string
+    Private Function GetAPAFormat(document As Document) As String
+        Dim output As String = ""
+
+        output &= GetAPAAuthorsList(document.authors) ' start with list of authors
+
+        Select Case document.docType
+
+            Case "Book"
+                output &= " (" & document.docYear & "). " ' then (Year)
+                If document.sectionTitle <> "" Then ' then section of book if there is one
+                    output &= document.sectionTitle & ". "
+                End If
+                output &= document.docTitle & ". " ' title of book
+                If document.startPage <> "" And document.endPage <> "" Then ' pages
+                    output &= "(pp. " & document.startPage & "-" & document.endPage & "). "
+                ElseIf document.startPage <> "" Then
+                    output &= "(p. " & document.startPage & "). "
+                End If
+                If document.city <> "" And document.state <> "" Then ' publisher location
+                    output &= document.city & ", " & document.state & ": "
+                ElseIf document.city <> "" Then
+                    output &= document.city & ": "
+                End If
+                If document.publisher <> "" Then ' publisher
+                    output &= document.publisher & "."
+                End If
+
+            Case "Journal"
+                output &= " (" & document.docYear & "). "
+                If document.sectionTitle <> "" Then
+                    output &= document.sectionTitle & ". "
+                End If
+                output &= document.docTitle & ". "
+                If document.volumeNum <> "" Then
+                    output &= "vol. " & document.volumeNum
+                    If document.issueNum <> "" Then
+                        output &= "(" & document.issueNum & ")"
+                    End If
+                    output &= ". "
+                End If
+                If document.startPage <> "" And document.endPage <> "" Then ' pages
+                    output &= document.startPage & "-" & document.endPage & ". "
+                ElseIf document.startPage <> "" Then
+                    output &= document.startPage & ". "
+                End If
+                If document.url <> "" Then
+                    If document.url.Substring(0, 3).ToUpper() = "DOI" Then
+                        output &= document.url
+                    Else
+                        output &= "Retrieved from " & document.url
+                    End If
+                End If
+
+            Case Else ' Conference
+                If document.docMonth <> "" And document.docDay <> "" Then
+                    output &= "(" & document.docYear & ", " & DateAndTime.MonthName(CInt(document.docMonth), True) & " " & document.docDay & "). "
+                ElseIf document.docMonth <> "" Then
+                    output &= "(" & document.docYear & ", " & DateAndTime.MonthName(CInt(document.docMonth), True) & "). "
+                Else
+                    output &= "(" & document.docYear & "). "
+                End If
+                If document.sectionTitle <> "" Then
+                    output &= document.sectionTitle & ". "
+                End If
+                output &= "Presented at " & document.docTitle & ". "
+                If document.city <> "" Then
+                    output &= document.city & ", "
+                End If
+                If document.publisher <> "" And document.state <> "" Then
+                    output &= document.state & ": " & document.publisher & "."
+                ElseIf document.state <> "" Then
+                    output &= document.state & "."
+                End If
+
+        End Select
+
+        Return output
+    End Function
+
+    ' this returns the text inserted into the pattern (replacing "{0}") or "" if the text is empty
+    Private Function FormatExistence(pattern As String, text As String) As String
+        If text = "" Then
+            Return ""
+        Else
+            Return pattern.Replace("{0}", text)
+        End If
+    End Function
+
+    ' returns a list of authors in APA format (LastName, F.M.)
+    Private Function GetAPAAuthorsList(authors As List(Of Person)) As String
+        Dim output As String = ""
+        For Each author As Person In authors
+            If author.lastName.Length > 0 Then
+                output &= author.lastName
+                If author.firstName.Length > 0 Then
+                    output &= ", " & author.firstName.Substring(0, 1) & "." ' only using firt initial of first name in APA
+                    If author.middleInit.Length > 0 Then
+                        output &= author.middleInit & "." ' let whole middle initial add (in case two letters like John RR Tolkien)
+                    End If
+                End If
+            ElseIf author.firstName.Length > 0 Then ' if no last name given (goes by one-word psuedonym) use whole first name and ignore middle
+                output &= author.firstName
+            End If
+            output &= ", "
+        Next
+        ' trim trailing ", " if there's any names added
+        If output.Length > 1 Then
+            output = output.Remove(output.Length - 2)
+        End If
+        Return output
+    End Function
 
 
 End Class
