@@ -64,7 +64,8 @@ Partial Public Class MainForm
         AuthorNames.ShareDBConnection(dbConnection) ' share dbConnection with AuthorNames (ideally this db connection should be its own static module)
 
         ' start everything off with an empty search to list all documents
-        SearchButton_Click(SearchButton, e) ' click the SearchButton (the SearchTextBox is empty)
+        SearchButton.PerformClick()
     End Sub
+
 
 End Class

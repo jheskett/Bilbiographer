@@ -61,8 +61,13 @@ Partial Public Class MainForm
         allDocuments.Clear() ' wipe old data first
         Try
             dbConnection.Open()
+            ' default sort is by author name
+            Dim sortBy As String = "ORDER BY LastName, FirstName, DocYear DESC, DocTitle"
+            If SortYearRadioButton.Checked Then ' if sorting by year, move it to first order sort
+                sortBy = "ORDER BY DocYear DESC, LastName, FirstName, DocTitle"
+            End If
             ' this joins the People and Document table with the Author junction table to query every Author expanded to its People and Document records (M:M relationship)
-            Dim cmd As OleDbCommand = New OleDbCommand("SELECT Author.PersonID, Author.DocID, FirstName, MiddleInit, LastName, DocType, DocTitle, SectionTitle, City, State, Publisher, DocYear, DocMonth, DocDay, StartPage, EndPage, URL, VolumeNum, IssueNum FROM ((Person INNER JOIN Author ON Person.PersonID = Author.PersonID) INNER JOIN Document ON Author.DocID = Document.DocID)", dbConnection)
+            Dim cmd As OleDbCommand = New OleDbCommand("SELECT Author.PersonID, Author.DocID, FirstName, MiddleInit, LastName, DocType, DocTitle, SectionTitle, City, State, Publisher, DocYear, DocMonth, DocDay, StartPage, EndPage, URL, VolumeNum, IssueNum FROM ((Person INNER JOIN Author ON Person.PersonID = Author.PersonID) INNER JOIN Document ON Author.DocID = Document.DocID) " & sortBy, dbConnection)
             Dim reader As OleDbDataReader = cmd.ExecuteReader()
             Dim count = 0
             While reader.Read()
@@ -108,16 +113,22 @@ Partial Public Class MainForm
     ' clicking the X button will reset the searchbox and click the button to force a search of all documents
     Private Sub SearchResetButton_Click(sender As Object, e As EventArgs) Handles SearchResetButton.Click
         SearchTextBox.Text = ""
-        SearchButton_Click(SearchButton, e) ' click the SearchButton
+        SearchButton.PerformClick() ' click the SearchButton
     End Sub
 
     ' hitting Enter in the SearchTextBox is made equivalent to clicking the search button to do the search
     Private Sub SearchTextBox_KeyDown(sender As Object, e As KeyEventArgs) Handles SearchTextBox.KeyDown
         If e.KeyCode = Keys.Enter Then
-            SearchButton_Click(SearchButton, e) ' click the SearchButton
+            SearchButton.PerformClick()
             e.Handled = True ' stop the annoying error sound when hitting Enter in a textbox
             e.SuppressKeyPress = True ' this seems needed too
         End If
     End Sub
+
+    ' if the sort radio buttons (Author or Year) are checked, the sort order changes
+    Private Sub SortRadioButton_CheckedChanged(sender As Object, e As EventArgs) Handles SortYearRadioButton.CheckedChanged, SortAuthorRadioButton.Click
+        SearchButton.PerformClick()
+    End Sub
+
 
 End Class

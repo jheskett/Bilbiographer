@@ -21,7 +21,6 @@ Module AuthorNames
         dbConnection = connection
         ' While here, pull in the names in the database
         UpdatePersonIDs()
-        Dim test As String = GetPersonIDByName("Santa", "", "Clause")
     End Sub
 
     Public Function GetPersonByPersonID(personID As String) As Person

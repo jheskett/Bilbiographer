@@ -69,6 +69,7 @@ Partial Class MainForm
         Me.DocTypeLabel = New System.Windows.Forms.Label()
         Me.DoneButton = New System.Windows.Forms.Button()
         Me.SearchPanel = New System.Windows.Forms.Panel()
+        Me.SearchResetButton = New System.Windows.Forms.Button()
         Me.PurposeLabel = New System.Windows.Forms.Label()
         Me.CitationFormatGroupBox = New System.Windows.Forms.GroupBox()
         Me.IEEERadioButton = New System.Windows.Forms.RadioButton()
@@ -83,7 +84,6 @@ Partial Class MainForm
         Me.UpdateButton = New System.Windows.Forms.Button()
         Me.SearchButton = New System.Windows.Forms.Button()
         Me.UpdatePanel = New System.Windows.Forms.Panel()
-        Me.SearchResetButton = New System.Windows.Forms.Button()
         Me.SearchPanel.SuspendLayout()
         Me.CitationFormatGroupBox.SuspendLayout()
         Me.SortGroupBox.SuspendLayout()
@@ -178,9 +178,9 @@ Partial Class MainForm
         '
         'ProgressLabel
         '
-        Me.ProgressLabel.Location = New System.Drawing.Point(353, 68)
+        Me.ProgressLabel.Location = New System.Drawing.Point(342, 68)
         Me.ProgressLabel.Name = "ProgressLabel"
-        Me.ProgressLabel.Size = New System.Drawing.Size(45, 23)
+        Me.ProgressLabel.Size = New System.Drawing.Size(59, 23)
         Me.ProgressLabel.TabIndex = 51
         Me.ProgressLabel.Text = "0/0"
         Me.ProgressLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -209,7 +209,7 @@ Partial Class MainForm
         'FirstNavButton
         '
         Me.FirstNavButton.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.FirstNavButton.Location = New System.Drawing.Point(239, 68)
+        Me.FirstNavButton.Location = New System.Drawing.Point(232, 68)
         Me.FirstNavButton.Name = "FirstNavButton"
         Me.FirstNavButton.Size = New System.Drawing.Size(51, 23)
         Me.FirstNavButton.TabIndex = 48
@@ -229,7 +229,7 @@ Partial Class MainForm
         'PrevNavButton
         '
         Me.PrevNavButton.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.PrevNavButton.Location = New System.Drawing.Point(296, 68)
+        Me.PrevNavButton.Location = New System.Drawing.Point(289, 68)
         Me.PrevNavButton.Name = "PrevNavButton"
         Me.PrevNavButton.Size = New System.Drawing.Size(51, 23)
         Me.PrevNavButton.TabIndex = 46
@@ -552,6 +552,16 @@ Partial Class MainForm
         Me.SearchPanel.Size = New System.Drawing.Size(528, 450)
         Me.SearchPanel.TabIndex = 11
         '
+        'SearchResetButton
+        '
+        Me.SearchResetButton.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.SearchResetButton.Image = CType(resources.GetObject("SearchResetButton.Image"), System.Drawing.Image)
+        Me.SearchResetButton.Location = New System.Drawing.Point(348, 61)
+        Me.SearchResetButton.Name = "SearchResetButton"
+        Me.SearchResetButton.Size = New System.Drawing.Size(36, 22)
+        Me.SearchResetButton.TabIndex = 9
+        Me.SearchResetButton.UseVisualStyleBackColor = True
+        '
         'PurposeLabel
         '
         Me.PurposeLabel.Location = New System.Drawing.Point(12, 13)
@@ -696,6 +706,7 @@ Partial Class MainForm
         '
         'UpdatePanel
         '
+        Me.UpdatePanel.Controls.Add(Me.PrevNavButton)
         Me.UpdatePanel.Controls.Add(Me.MoreAuthorsButton)
         Me.UpdatePanel.Controls.Add(Me.label14)
         Me.UpdatePanel.Controls.Add(Me.label13)
@@ -710,7 +721,6 @@ Partial Class MainForm
         Me.UpdatePanel.Controls.Add(Me.LastNavButton)
         Me.UpdatePanel.Controls.Add(Me.FirstNavButton)
         Me.UpdatePanel.Controls.Add(Me.NextNavButton)
-        Me.UpdatePanel.Controls.Add(Me.PrevNavButton)
         Me.UpdatePanel.Controls.Add(Me.label11)
         Me.UpdatePanel.Controls.Add(Me.URLTextBox)
         Me.UpdatePanel.Controls.Add(Me.label9)
@@ -748,23 +758,13 @@ Partial Class MainForm
         Me.UpdatePanel.TabIndex = 12
         Me.UpdatePanel.Visible = False
         '
-        'SearchResetButton
-        '
-        Me.SearchResetButton.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.SearchResetButton.Image = CType(resources.GetObject("SearchResetButton.Image"), System.Drawing.Image)
-        Me.SearchResetButton.Location = New System.Drawing.Point(348, 61)
-        Me.SearchResetButton.Name = "SearchResetButton"
-        Me.SearchResetButton.Size = New System.Drawing.Size(36, 22)
-        Me.SearchResetButton.TabIndex = 9
-        Me.SearchResetButton.UseVisualStyleBackColor = True
-        '
         'MainForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(528, 450)
-        Me.Controls.Add(Me.SearchPanel)
         Me.Controls.Add(Me.UpdatePanel)
+        Me.Controls.Add(Me.SearchPanel)
         Me.Name = "MainForm"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Bibliographer"

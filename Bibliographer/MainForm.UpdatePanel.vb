@@ -391,5 +391,30 @@ Partial Public Class MainForm
         End Select
     End Sub
 
+    ' click of the Delete button will prompt the user if they really want to delete this document and then delete it if so
+    Private Sub DeleteButton_Click(sender As Object, e As EventArgs) Handles DeleteButton.Click
+        If docIDIndex >= 0 Then ' only allow deleting a document if it exists (can't delete new ones)
+            Dim result As DialogResult = MessageBox.Show("Are you sure you want to delete this?", "Deleting Document", MessageBoxButtons.YesNo)
+            If result = DialogResult.Yes Then
+
+                Try
+                    dbConnection.Open()
+                    ' first delete the Author table entries for this DocID
+                    Dim cmd1 As OleDbCommand = New OleDbCommand("DELETE FROM Author WHERE DocID=" & GetCurrentDocID(), dbConnection)
+                    cmd1.ExecuteNonQuery()
+                    ' then delete the Document table entries for this DocID
+                    Dim cmd2 As OleDbCommand = New OleDbCommand("DELETE FROM Document WHERE DocID=" & GetCurrentDocID(), dbConnection)
+                    cmd2.ExecuteNonQuery()
+                Catch ex As Exception
+                    MessageBox.Show("Error deleting document: " & ex.Message)
+                Finally
+                    dbConnection.Close()
+                End Try
+            End If
+        End If
+        ' after deleting document, move back to previous record (if it was first record it will wrap to end--if any documents still exist)
+        docIDIndex -= 1
+        UpdateDisplayedRecord()
+    End Sub
 
 End Class
